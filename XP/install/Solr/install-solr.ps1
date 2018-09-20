@@ -60,7 +60,7 @@ Function Find-JRE-Path {
 	
 	If (!(Test-Path -Path $RegistryPath))
 	{
-		throw "Java JRE must be installed with minimum version $($JRERequiredVersion)"
+		throw "Expected Java JRE $($JRERequiredVersion) or above must be installed."
 	}
 
 	$javaVersionStrings = Get-ChildItem $RegistryPath | ForEach-Object { $parts = $_.Name.Split("\"); $parts[$parts.Count-1] } 
@@ -82,7 +82,7 @@ Function Find-JRE-Path {
 
 	If (-not $foundVersion)
 	{
-		throw "Java JRE must be installed with minimum version $($JRERequiredVersion)"
+		throw "Invalid version. Expected Java JRE $($JRERequiredVersion) or above must be installed."
 	}
 
 	$JavaRegistryPath = Join-Path -Path $RegistryPath -ChildPath $version

@@ -14,7 +14,7 @@ $nssmRoot = "$installFolder\nssm-$nssmVersion"
 
 $ErrorActionPreference = 'Stop'
 
-Write-Host "Remove Solr service: $($solrName)"
+Write-Host "Remove Solr service: $($solrName)" -ForegroundColor Green
 $svc = Get-Service "$solrName" -ErrorAction SilentlyContinue
 if($svc)
 {
@@ -28,7 +28,7 @@ if($svc)
 
 
 if((Test-Path $KeystoreFile)) {
-    Write-Host "Delete JKS file: $($KeystoreFile)"
+    Write-Host "Delete JKS file: $($KeystoreFile)" -ForegroundColor Green
     $jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine)
     $path = $jreVal + '\bin\keytool.exe'
 
@@ -39,17 +39,17 @@ if((Test-Path $KeystoreFile)) {
     
     
     $P12Path = [IO.Path]::ChangeExtension($KeystoreFile, 'p12')
-    Write-Host "Delete P12 file: $($P12Path)"
+    Write-Host "Delete P12 file: $($P12Path)" -ForegroundColor Green
     if((Test-Path $P12Path)) {
         Remove-Item $P12Path
     }
 }
 
 
-Write-Host "Remove Solr root folder: $($solrRoot)"
+Write-Host "Remove Solr root folder: $($solrRoot)" -ForegroundColor Green
 If((Test-Path $solrRoot)) {
     Remove-Item -Path $solrRoot -Force -Recurse
 } 
 
-Write-Host "Remove Solr SSL Certificate"
+Write-Host "Remove Solr SSL Certificate" -ForegroundColor Green
 Get-ChildItem -Path "Cert:\LocalMachine\Root" | Where-Object -Property FriendlyName -eq "solr-ssl" | Remove-Item
