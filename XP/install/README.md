@@ -9,18 +9,19 @@ Solr can be installed with a script if you do not already have it.
 Still in an elevated PowerShell session:
 
 - Browse to the solr folder
-	```
+
+  ```powershell
   Set-Location Sitecore.Habitathome.Utilities\XP\Install\solr
-	```
+  ```
 
 - Review the `install-solr.ps1` script to ensure the Java and Solr versions are correct
 
 - Install Solr
-	```
-	.\install-solr.ps1 -JREVersion <version of JRE you have installed ie: 1.8.0_181>
-	```
 
-> **Known Issue**: error finding keytool. For now, exit and re-open Powershell and run the script again
+  ```powershell
+  .\install-solr.ps1
+  ```
+
 > Once setup is complete, the installer should load the solr 'home' page
 
 ### Prepare to install XP
