@@ -40,7 +40,7 @@ function downloadAndUnzipIfRequired
         [string]$toolSourceFile,
         [string]$installRoot
     )
-
+	
     if(!(Test-Path -Path $toolFolder))
     {
         if(!(Test-Path -Path $toolZip))
@@ -54,6 +54,42 @@ function downloadAndUnzipIfRequired
     }
 }
 
+Function Find-JRE-Path {
+	$RegistryPath = "HKLM:\SOFTWARE\JavaSoft\Java Runtime Environment"
+	$JRERequiredVersion = "1.8"
+	
+	If (!(Test-Path -Path $RegistryPath))
+	{
+		throw "Java JRE must be installed with minimum version $($JRERequiredVersion)"
+	}
+
+	$javaVersionStrings = Get-ChildItem $RegistryPath | ForEach-Object { $parts = $_.Name.Split("\"); $parts[$parts.Count-1] } 
+	$version = $null
+    $foundVersion = $FALSE
+        
+	foreach ($versionString in $javaVersionStrings) {
+		try {
+			$version = New-Object System.Version($versionString)
+		} catch {
+			continue
+		}
+
+		if ($version.CompareTo($minVersion) -ge 0) {
+			$foundVersion = $TRUE
+			break;
+		}
+	}
+
+	If (-not $foundVersion)
+	{
+		throw "Java JRE must be installed with minimum version $($JRERequiredVersion)"
+	}
+
+	$JavaRegistryPath = Join-Path -Path $RegistryPath -ChildPath $version
+        
+    return (Get-ItemProperty -Path $JavaRegistryPath).JavaHome
+}
+
 # download & extract the solr archive to the right folder
 $solrZip = "$downloadFolder\$solrName.zip"
 downloadAndUnzipIfRequired "Solr" $solrRoot $solrZip $solrPackage $installFolder
@@ -63,11 +99,17 @@ $nssmZip = "$downloadFolder\nssm-$nssmVersion.zip"
 downloadAndUnzipIfRequired "NSSM" $nssmRoot $nssmZip $nssmPackage $installFolder
 
 # Ensure Java environment variable
+If (-not (Test-Path -Path $JREPath))
+{
+	$JREPath = Find-JRE-Path
+}
+
 $jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine)
 if($jreVal -ne $JREPath)
 {
     Write-Host "Setting JAVA_HOME environment variable"
-    [Environment]::SetEnvironmentVariable("JAVA_HOME", $JREPath, [EnvironmentVariableTarget]::Machine)
+	[Environment]::SetEnvironmentVariable("JAVA_HOME", $JREPath, [EnvironmentVariableTarget]::Machine)
+	$jreVal = $JREPath
 }
 
 
