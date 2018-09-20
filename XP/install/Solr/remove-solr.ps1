@@ -12,7 +12,9 @@ $solrName = "solr-$solrVersion"
 $solrRoot = "$installFolder\$solrName"
 $nssmRoot = "$installFolder\nssm-$nssmVersion"
 
-Write-Host "Remove Solr service"
+$ErrorActionPreference = 'Stop'
+
+Write-Host "Remove Solr service: $($solrName)"
 $svc = Get-Service "$solrName" -ErrorAction SilentlyContinue
 if($svc)
 {
@@ -24,23 +26,27 @@ if($svc)
     &"$nssmTool" remove "$solrName" confirm
 }
 
-Write-Host "Delete JKS file"
-$jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine)
-$path = $jreVal + '\bin\keytool.exe'
-$keytool = (Get-Command $path).Source
-& $keytool -delete -alias "solr-ssl" -storetype JKS -keystore $KeystoreFile -storepass $keystoreSecret
 
 if((Test-Path $KeystoreFile)) {
-	Remove-Item $KeystoreFile
+    Write-Host "Delete JKS file: $($KeystoreFile)"
+    $jreVal = [Environment]::GetEnvironmentVariable("JAVA_HOME", [EnvironmentVariableTarget]::Machine)
+    $path = $jreVal + '\bin\keytool.exe'
+
+    $keytool = (Get-Command $path).Source
+    & $keytool -delete -alias "solr-ssl" -storetype JKS -keystore $KeystoreFile -storepass $keystoreSecret
+
+    Remove-Item $KeystoreFile
+    
+    
+    $P12Path = [IO.Path]::ChangeExtension($KeystoreFile, 'p12')
+    Write-Host "Delete P12 file: $($P12Path)"
+    if((Test-Path $P12Path)) {
+        Remove-Item $P12Path
+    }
 }
 
-Write-Host "Delete P12 file"
-$P12Path = [IO.Path]::ChangeExtension($KeystoreFile, 'p12')
-if((Test-Path $P12Path)) {
-	Remove-Item $P12Path
-}
 
-Write-Host "Remove Solr root folder"
+Write-Host "Remove Solr root folder: $($solrRoot)"
 If((Test-Path $solrRoot)) {
     Remove-Item -Path $solrRoot -Force -Recurse
 } 
